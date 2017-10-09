@@ -16,12 +16,9 @@ notes = [];
 for k =1:length(listname)
     [s,fs] = audioread([notesfolder listname(k).name]); 
     s = resample(s,16000,fs);
-    %s=reshape(s,[35965*2,1]);
-    %s=(s(:,1)+s(:,2))/2;
     spectrum = stft(s(:,1)',2048,256,0,hann(2048));
     % Find the central frame
     middle = ceil(size(spectrum,2)/2);
-    
     note = abs(spectrum(:,middle));
     % Clean up everything more than 40db below the peak
     note(find(note < max(note(:))/100)) = 0;
@@ -35,6 +32,7 @@ smagNote=notes;
 %% Load Spectrum Magnitues and Phases of The Provided Music
 % Fill your code here to return 'smagMusic' and 'sphaseMusic'
 [s,fs] = audioread('polyushka.wav');
+% resample the signal to std sampling rate for convenience
 s = resample(s,16000,fs);
 spectrum = stft(s',2048,256,0,hann(2048));
 music = abs(spectrum);
