@@ -1,3 +1,8 @@
+%%
+clear all;
+clc;
+%%
+%load data
 train_image = loadMNISTImages('data/train-images-idx3-ubyte');
 labels = loadMNISTLabels('data/train-labels-idx1-ubyte');
 [D,N]=size(train_image);
@@ -6,6 +11,7 @@ train_image_centered=train_image-(sum(train_image,2)/N)*ones(1,N);
 K = 100;
 w = randn(D,K);
 sigma = abs(randn(1,1));
+% get log-likelihood
 M = w'* w + sigma.*eye(K);
 S = 0;
 for i = 1:N
@@ -26,7 +32,6 @@ log_likihood = [];
 log_likihood = [log_likihood, tmp];
 %%
 for iter = 1:10
-    iter
     % E-step
     M = w'*w + sigma*eye(K);
     U = chol(M);
@@ -37,7 +42,6 @@ for iter = 1:10
         Ezn{i} = (V*V')* w'*train_image_centered(:,i);
         Eznzn_t{i} = sigma.*(V*V') + Ezn{i}*Ezn{i}';
     end
-    
     % M-step
     first_part=0;
     second_part=0;
@@ -53,7 +57,7 @@ for iter = 1:10
     sigma_new=sigma_new/(N*D);
     w = w_new;
     sigma = sigma_new;
-    
+    % compute log-likelihood
     M = w'* w + sigma.*eye(K);
     S = 0;
     for i = 1:N
@@ -73,11 +77,11 @@ for iter = 1:10
     log_likihood = [log_likihood,tmp];
 end
 %%
-figure,
+%plot to see the trend (increasing?)
 plot(log_likihood);
 
 %%
-
+% project data
 train_proj = w'*train_image_centered;
 test_images = loadMNISTImages('data/t10k-images-idx3-ubyte')'; 
 test_labels = loadMNISTLabels('data/t10k-labels-idx1-ubyte');
@@ -97,14 +101,16 @@ score=zeros(10000,10);
 for i =1:10
 score(:,i)= mvnpdf(test_images_proj',meann{i}',covv{i});
 end
-[~,result] = max(score,[],2); 
-result=result-1;
+%%
+%compute accuracy
+[~,res] = max(score,[],2); 
+res=res-1;
 count=0;
-compare=result-test_labels;
+diff=res-test_labels;
 for i =1:10000
-if compare(i)==0
+if diff(i)==0
     count=count+1;
 end
 end
-accuracy_50=count/10000;
+accuracy=count/10000;
 
